@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Speech to Text & Text to Speech</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin-right: 10px;
+      cursor: pointer;
+    }
+    #status {
+      margin-top: 10px;
+      font-style: italic;
+      color: #555;
+    }
+    #text {
+      margin-top: 20px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      min-height: 50px;
+      border-radius: 5px;
+    }
+    textarea {
+      width: 100%;
+      height: 80px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Speech to Text & Text to Speech</h1>
+
+  <h2>Speech to Text</h2>
+  <button id="start-btn">🎙️ Start Listening</button>
+  <button id="stop-btn">🛑 Stop</button>
+  <div id="status">Not listening</div>
+  <div id="text"></div>
+
+  <h2>Text to Speech</h2>
+  <textarea id="tts-input" placeholder="Type something here..."></textarea>
+  <br />
+  <button id="speak-btn">🔊 Speak Text</button>
+
+  <script>
+    const startBtn = document.getElementById("start-btn");
+    const stopBtn = document.getElementById("stop-btn");
+    const statusEl = document.getElementById("status");
+    const textEl = document.getElementById("text");
+
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    let recognition;
+
+    if (SpeechRecognition) {
+      recognition = new SpeechRecognition();
+      recognition.lang = "en-US";
+      recognition.continuous = true;
+      recognition.interimResults = false;
+
+      recognition.onstart = () => {
+        statusEl.textContent = "Listening...";
+      };
+
+      recognition.onend = () => {
+        statusEl.textContent = "Not listening";
+      };
+
+      recognition.onresult = (event) => {
+        let transcript = "";
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          transcript += event.results[i][0].transcript;
+        }
+        transcript = transcript.toLowerCase();
+        textEl.textContent = transcript;
+        speakText(transcript);
+      };
+
+      recognition.onerror = (event) => {
+        statusEl.textContent = "Error: " + event.error;
+      };
+    }
+
+    startBtn.onclick = () => {
+      if (recognition) recognition.start();
+    };
+
+    stopBtn.onclick = () => {
+      if (recognition) recognition.stop();
+    };
+
+    const speakBtn = document.getElementById("speak-btn");
+    const ttsInput = document.getElementById("tts-input");
+
+    function speakText(text) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = "en-US";
+      window.speechSynthesis.speak(utterance);
+    }
+
+    speakBtn.onclick = () => {
+      const text = ttsInput.value.trim();
+      if (text.length > 0) {
+        speakText(text);
+      }
+    };
+  </script>
+</body>
+</html>
